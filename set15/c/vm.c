@@ -91,7 +91,7 @@ static InterpretResult run(void) {
         break;
 
       case OP_NEGATE:
-        push(-pop());
+        vm.stackTop[-1] = -vm.stackTop[-1];
         break;
 
       case OP_RETURN:
