@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include "chunk.h"
+#include "debug.h"
 #include "common.h"
 
 int main(void) {
@@ -37,5 +38,35 @@ int main(void) {
     assert(chunk.count == 0);
     assert(chunk.lineCount == 0);
 
-    return 0;
+    for (int i = 0; i <= 65536; i++) {
+        int offset = chunk.count;
+        writeConstant(&chunk, i + 0.5, 200);
+
+        if (i <= 255) {
+         assert(chunk.code[offset] == OP_CONSTANT);
+         assert(chunk.count == offset +2);
+        } else {
+            assert(chunk.code[offset] == OP_CONSTANT_LONG);
+            assert(chunk.count == offset +4);
+        }
+
+        assert(getLine(&chunk, offset) == 200);
+        assert(getLine(&chunk, offset + 1) == 200);
+
+        if (i == 0 || i == 255 || i == 256 || i == 65535 || i == 65536) {
+            disassembleInstruction(&chunk, offset);
+        }
+    }
+
+     assert(chunk.constants.count == 65537);
+     assert(chunk.lineCount == 1);
+
+     writeChunk(&chunk, OP_RETURN, 201);
+     disassembleInstruction(&chunk, chunk.count - 1);
+
+     freeChunk(&chunk);
+     return 0;
 }
+        
+    
+
